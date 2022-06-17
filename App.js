@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View, Image, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { TextInput } from 'react-native-paper';
 import axios from 'axios';
-import { getMeteoByDay } from './src/tools/helper';
+import { getMeteoByDay, getDays } from './src/tools/helper';
 
 
 
@@ -13,8 +13,15 @@ export default function App() {
   const [infoCity, setInfoCity] = useState({});
   const [forecast, setForecast] = useState([]);
   const [isValid, setIsValid] = useState(false);
+  const [showForecastDay, setShowForecastDay] = useState([]);
 
-  const image = { uri: "https://img.huffingtonpost.com/asset/5ccca7d6230000c40096e54e.jpeg?ops=scalefit_720_noupscale" };
+
+  const days = getDays();
+  console.log(days);
+
+
+
+  const image = { uri: "https://www.pourquoidonc.com/wp-content/uploads/2020/12/Ciel-bleu.jpg" };
 
 
   useEffect(() => {
@@ -23,6 +30,7 @@ export default function App() {
         if (response.status === 200) {
           setForecast(getMeteoByDay(response.data.list));
           setInfoCity(response.data.city);
+          setShowForecastDay(getMeteoByDay(response.data.list)[0]);
           setIsValid(true)
         }
       })
@@ -37,7 +45,10 @@ export default function App() {
 
 
 
+
   return (
+
+
     <View style={styles.container}>
       <ImageBackground source={image} resizeMode="cover" style={styles.image}>
 
@@ -56,21 +67,35 @@ export default function App() {
                 uri: `http://openweathermap.org/img/wn/${forecast[0][0].weather[0].icon}@2x.png`,
               }}></Image>
             </View>
-            <Text >{forecast[0][0].clouds.dt}</Text>
+
+
+            {days.map((day, index) => {
+
+              return (
+                <View key={index}>
+                  <TouchableOpacity onPress={() => setShowForecastDay(forecast[index])} style={{ backgroundColor: 'white' }}>
+                    <Text>{index == 0 ? "Aujourd'hui" : index == 1 ? "Demain" : day}</Text>
+                    <Text style={{ fontSize: 25, color: "white", margin: 15 }}>{days[0]}</Text>
+                  </TouchableOpacity>
+                </View>
+              )
+
+            })}
 
             <View style={{ flexDirection: "row", justifyContent: "space-evenly", backgroundColor: "black", opacity: 0.60 }}>
 
-              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Actuellement: {forecast[0][0].main.temp}°</Text>
-              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Ressenti: {forecast[0][0].main.feels_like}°</Text>
-              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Min: {forecast[0][0].main.temp_min}°</Text>
+              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Actuellement: {showForecastDay[0].main.temp}°</Text>
+              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Ressenti: {showForecastDay[0].main.feels_like}°</Text>
+              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Min: {showForecastDay[0].main.temp_min}°</Text>
 
             </View>
 
             <View style={{ flexDirection: "row", justifyContent: "space-evenly", backgroundColor: "black", opacity: 0.60 }}>
-              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Max: {forecast[0][0].main.temp_max}°</Text>
-              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Humidité: {forecast[0][0].main.humidity}%</Text>
-              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Vent: {forecast[0][0].wind.speed} km/h</Text>
+              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Max: {showForecastDay[0].main.temp_max}°</Text>
+              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Humidité: {showForecastDay[0].main.humidity}%</Text>
+              <Text style={{ fontSize: 25, color: "white", margin: 15 }}>Vent: {showForecastDay[0].wind.speed} km/h</Text>
             </View>
+
           </View>
         }
         {!isValid &&
